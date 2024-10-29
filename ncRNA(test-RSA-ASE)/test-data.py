@@ -39,7 +39,7 @@ def load_classic_text_dataset(text="war_and_peace", file_name="war_and_peace.txt
         print(f"{text} dataset already exists.")
     
     # Load and return the dataset
-    with open(file_name, 'r') as file:
+    with open(file_name, 'r', encoding="UTF-8") as file:
         data = file.read()
     return data
 

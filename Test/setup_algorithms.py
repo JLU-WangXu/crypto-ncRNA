@@ -18,7 +18,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-sys.path.append(os.path.abspath('./Test/__pycache__'))
+# 修改相对路径为绝对路径
+sys.path.append(os.path.abspath('D:/大学/2024/RNA密码算法/crypto-ncRNA-main/Test/__pycache__'))
 
 # -------------------------------
 # 环境设置与文件操作工具函数部分
@@ -180,8 +181,9 @@ def run_decryption(encrypted_data_with_checksum, decrypt_function, seed, seed_se
 
 if __name__ == "__main__":
     """主程序入口，加载数据并运行加密解密算法"""
-    war_and_peace_txt = open('./Test/war_and_peace.txt', 'r', encoding="UTF-8").read()
-    nist_test_data_txt = open('./Test/nist_test_data.txt', 'r').read()
+    # 修改文件路径
+    war_and_peace_txt = open('D:/大学/2024/RNA密码算法/crypto-ncRNA-main/Test/war_and_peace.txt', 'r', encoding="UTF-8").read()
+    nist_test_data_txt = open('D:/大学/2024/RNA密码算法/crypto-ncRNA-main/Test/nist_test_data.txt', 'r').read()
 
     algorithm_modules = {
         "ncRNA3_1_op": "ncRNA3_1_op",
@@ -198,8 +200,9 @@ if __name__ == "__main__":
     run_times = 5
     results_db = {}
 
-    json_folder_path = "./Test/dbjson"
-    img_dir = "./Test/images"
+    # 修改输出目录路径
+    json_folder_path = "D:/大学/2024/RNA密码算法/crypto-ncRNA-main/Test/dbjson"
+    img_dir = "D:/大学/2024/RNA密码算法/crypto-ncRNA-main/Test/images"
     data_type = "text data"
     seed = generate_random_string(32, string.digits)
     seed_sequence = generate_random_string(32, "ACGU")

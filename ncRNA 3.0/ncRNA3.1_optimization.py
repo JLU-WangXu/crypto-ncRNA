@@ -18,17 +18,6 @@ codons = [a + b + c for a in 'ACGU' for b in 'ACGU' for c in 'ACGU']
 # 定义Base64字符集（不包括'='）
 base64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-# 添加can_pair函数用于判断RNA碱基是否可以配对
-def can_pair(base1, base2):
-    # Watson-Crick配对规则: A-U, G-C
-    # Wobble配对规则: G-U
-    pairs = {
-        ('A', 'U'), ('U', 'A'),
-        ('G', 'C'), ('C', 'G'),
-        ('G', 'U'), ('U', 'G')
-    }
-    return (base1, base2) in pairs
-
 # 1. 生成密码子替换矩阵
 def generate_codon_substitution_matrix(seed):
     random.seed(seed)  # 设置随机种子
@@ -58,44 +47,47 @@ def encode_plaintext_to_codons(plaintext):
 def substitute_codons(codon_sequence, substitution_matrix):
     return [substitution_matrix[codon] for codon in codon_sequence]  # 替换密码子
 
-# 4. RNA二级结构折叠（使用LinearFold算法）
-def linearfold(sequence):
+# 4. RNA二级结构折叠（使用Nussinov算法进行迭代追踪）
+@lru_cache(maxsize=None)
+def can_pair(b1, b2):
+    pairs = frozenset([('A', 'U'), ('U', 'A'), ('C', 'G'), ('G', 'C')])
+    return (b1, b2) in pairs
+
+def nussinov_algorithm(sequence):
     n = len(sequence)
-    # 初始化动态规划矩阵和回溯矩阵
-    dp = np.zeros(n + 1, dtype=int)
-    bp = np.zeros(n, dtype=int)  # 回溯数组，存储碱基对信息
-    
-    # 定义最大跨度
-    max_span = 100  # 可以根据需要调整
-    
-    # 线性时间动态规划
-    for i in range(1, n + 1):
-        dp[i] = dp[i - 1]  # 不配对的情况
-        for j in range(max(0, i - max_span), i - 3):  # 限制最大跨度
-            if can_pair(sequence[j], sequence[i - 1]):
-                score = dp[j] + 1  # 形成碱基对得分+1
-                if score > dp[i]:
-                    dp[i] = score
-                    bp[i - 1] = j  # 记录配对位置
-    
-    # 构建二级结构
-    structure = ['.' for _ in range(n)]
-    i = n - 1
-    while i >= 0:
-        if bp[i] > 0:
-            structure[bp[i]] = '('
-            structure[i] = ')'
-            i = bp[i] - 1
+    dp = np.zeros((n, n), dtype=int)
+    # 填充动态规划表
+    for k in range(1, n):
+        for i in range(n - k):
+            j = i + k
+            if can_pair(sequence[i], sequence[j]):
+                dp[i][j] = max(dp[i+1][j], dp[i][j-1], dp[i+1][j-1] + 1)
+            else:
+                dp[i][j] = max(dp[i+1][j], dp[i][j-1])
+    # 执行迭代追踪
+    structure = ['.'] * n
+    stack = [(0, n - 1)]
+    while stack:
+        i, j = stack.pop()
+        if i >= j:
+            continue
+        elif dp[i][j] == dp[i+1][j]:
+            stack.append((i+1, j))
+        elif dp[i][j] == dp[i][j-1]:
+            stack.append((i, j-1))
+        elif can_pair(sequence[i], sequence[j]) and dp[i][j] == dp[i+1][j-1] + 1:
+            structure[i] = '('
+            structure[j] = ')'
+            stack.append((i+1, j-1))
         else:
-            i -= 1
-            
+            stack.append((i+1, j-1))
     return ''.join(structure)
 
 def apply_rna_secondary_structure(codon_sequence):
     # 将密码子序列展平为碱基序列
     base_sequence = ''.join(codon_sequence)
     # 获取二级结构
-    structure = linearfold(base_sequence)
+    structure = nussinov_algorithm(base_sequence)
     # 根据结构重新排列序列
     paired_indices = []
     unpaired_indices = []

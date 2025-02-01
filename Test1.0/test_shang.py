@@ -114,8 +114,8 @@ def save_to_csv(entropies, file_number, directory="./results/csv/shang"):
 
 
 def main():
-    data_lengths = [100, 500, 1000, 5000, 10000, 50000, 100000, 500000]
-    runs = 20
+    data_lengths = [50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+    runs = 30
 
     algorithms = setup_algorithms()
 

@@ -82,7 +82,7 @@ def setup_algorithms():
 
     return algorithms
 
-def find_next_file_number(directory="./results/csv/shang"):
+def find_next_file_number(directory="./results/csv/time"):
     """返回下一个可用的文件编号"""
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -93,7 +93,7 @@ def find_next_file_number(directory="./results/csv/shang"):
     for file_name in existing_files:
         if file_name.endswith(".csv"):
             try:
-                num = int(file_name.split("_")[2].split(".")[0])  # 以文件名中的数字部分来判断编号
+                num = int(file_name.split("_")[1].split(".")[0])
                 existing_numbers.append(num)
             except ValueError:
                 continue
@@ -101,9 +101,9 @@ def find_next_file_number(directory="./results/csv/shang"):
     next_number = max(existing_numbers, default=0) + 1
     return next_number
 
-def save_to_csv(entropies, file_number, directory="./results/csv/shang"):
+def save_to_csv(all_times, file_number):
     """将所有结果汇总到一个CSV文件"""
-    file_path = f"{directory}/entropy_results_{file_number}.csv"
+    file_path = f"./results/csv/time/time_{file_number}.csv"
     
     # 如果文件不存在，写入表头
     file_exists = os.path.exists(file_path)
@@ -112,12 +112,15 @@ def save_to_csv(entropies, file_number, directory="./results/csv/shang"):
         
         if not file_exists:
             # 写入表头
-            writer.writerow(["Algorithm", "Data Length", "Average Entropy"])
+            writer.writerow(["Algorithm", "Data Length", "Encryption Time", "Decryption Time"])
 
         # 遍历所有算法及其结果
-        for algo_name, data in entropies.items():
-            for data_length, average_entropy in data:
-                writer.writerow([algo_name, data_length, f"{average_entropy:.16f}"])
+        for algo_name, time_data in all_times.items():
+            for i in range(len(time_data["encryption"])):
+                data_length = time_data["data_lengths"][i]
+                enc_time = time_data["encryption"][i]
+                dec_time = time_data["decryption"][i]
+                writer.writerow([algo_name, data_length, enc_time, dec_time])
 
     print(f"Results saved to {file_path}")
 

@@ -6,13 +6,9 @@ from Crypto.Cipher import AES  # 导入AES加密模块
 from Crypto.Util.Padding import pad, unpad  # 导入填充和去填充函数
 import base64   # 导入base64模块用于编码
 import math     # 导入math模块用于数学运算
-import matplotlib.pyplot as plt  # 导入matplotlib.pyplot用于绘图
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA256  # 导入正确的哈希模块
 import numpy as np
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import multiprocessing
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Random import get_random_bytes  # 添加这行导入语句在文件顶部的导入区域
@@ -341,6 +337,24 @@ def calculate_entropy(data):
     probabilities = freqs / data_length
     entropy = -np.sum(probabilities * np.log2(probabilities))
     return entropy
+
+
+def save_encrypted_data_to_txt(encrypted_data, data_length, algorithm_name, file_directory="./results/txt"):
+    """将加密后的密文保存为txt文件（Base64编码）"""
+    if not os.path.exists(file_directory):
+        os.makedirs(file_directory)
+
+    # 文件命名规则
+    file_path = os.path.join(file_directory, f"{algorithm_name}_encrypted_{data_length}.txt")
+    
+    # 将二进制数据编码为Base64字符串
+    encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
+    
+    # 保存Base64字符串到txt文件
+    with open(file_path, "w") as f:
+        f.write(encrypted_data_base64)
+    
+    print(f"Encrypted data saved to {file_path}")
 
 # 绘制熵直方图
 def plot_entropy_histogram(data):

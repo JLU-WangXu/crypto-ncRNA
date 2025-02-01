@@ -5,6 +5,7 @@ import csv
 from dataclasses import dataclass, field
 from collections import defaultdict
 import psutil  # 新增：用于监控资源消耗
+import tracemalloc  # 新增：用于更精确的内存追踪
 
 @dataclass
 class EncryptionArgs:
@@ -16,12 +17,6 @@ def generate_random_string(length=32, charset=string.ascii_letters + string.digi
     if secure:
         return ''.join(random.SystemRandom().choices(charset, k=length))
     return ''.join(random.choices(charset, k=length))
-
-def record_memory_usage():
-    """记录当前的内存使用情况"""
-    process = psutil.Process(os.getpid())
-    memory_info = process.memory_info()
-    return memory_info.rss / (1024 * 1024)  # 以MB为单位
 
 def benchmark_encryption(algorithm_name, encrypt_function, decrypt_function, data_lengths, run_times, *args):
     times = defaultdict(lambda: {"data_lengths": [],
@@ -38,48 +33,42 @@ def benchmark_encryption(algorithm_name, encrypt_function, decrypt_function, dat
         plaintext = preloaded_data.plaintext
 
         for _ in range(run_times):
+            # 加密过程内存统计
+            snapshot_before_enc = tracemalloc.take_snapshot()
             if algorithm_name == "AES":
                 seed = generate_random_string(32, string.digits, secure=True)
                 salt = generate_random_string(16, secure=True)
-                
-                encryption_memory_before = record_memory_usage()
                 encrypted_data = encrypt_function(plaintext, seed, salt)
-                encryption_memory_after = record_memory_usage()
-
             elif algorithm_name == "RSA":
-                encryption_memory_before = record_memory_usage()
                 encrypted_data, public_key, private_key = encrypt_function(plaintext)
-                encryption_memory_after = record_memory_usage()
-
             elif algorithm_name == "ncRNA":
                 seed = generate_random_string(32, string.digits, secure=True).encode()
                 seed_sequence = generate_random_string(32, charset='ACGU', secure=True)
                 salt = generate_random_string(16, secure=True)
-                
-                encryption_memory_before = record_memory_usage()
                 encrypted_data_tuple = encrypt_function(plaintext, seed, seed_sequence, salt)
                 encrypted_data = encrypted_data_tuple[0]
-                encryption_memory_after = record_memory_usage()
-
+            snapshot_after_enc = tracemalloc.take_snapshot()
+            
+            # 计算加密内存消耗
+            stats_enc = snapshot_after_enc.compare_to(snapshot_before_enc, 'lineno')
+            enc_memory = sum(stat.size_diff for stat in stats_enc if stat.size_diff > 0) / (1024 * 1024)
+            times[algorithm_name]["encryption_memory"].append(enc_memory)
             times[algorithm_name]["data_lengths"].append(data_length)
-            times[algorithm_name]["encryption_memory"].append(encryption_memory_after - encryption_memory_before)
 
+            # 解密过程内存统计
+            snapshot_before_dec = tracemalloc.take_snapshot()
             if algorithm_name == "AES":
-                decryption_memory_before = record_memory_usage()
                 decrypt_function(encrypted_data, seed, salt)
-                decryption_memory_after = record_memory_usage()
-
             elif algorithm_name == "RSA":
-                decryption_memory_before = record_memory_usage()
                 decrypt_function(encrypted_data, private_key)
-                decryption_memory_after = record_memory_usage()
-
             elif algorithm_name == "ncRNA":
-                decryption_memory_before = record_memory_usage()
                 decrypt_function(encrypted_data, seed, seed_sequence, salt, *encrypted_data_tuple[1:])
-                decryption_memory_after = record_memory_usage()
-
-            times[algorithm_name]["decryption_memory"].append(decryption_memory_after - decryption_memory_before)
+            snapshot_after_dec = tracemalloc.take_snapshot()
+            
+            # 计算解密内存消耗
+            stats_dec = snapshot_after_dec.compare_to(snapshot_before_dec, 'lineno')
+            dec_memory = sum(stat.size_diff for stat in stats_dec if stat.size_diff > 0) / (1024 * 1024)
+            times[algorithm_name]["decryption_memory"].append(dec_memory)
 
     return times
 
@@ -141,8 +130,8 @@ def save_to_csv(all_times, file_number):
     print(f"Results saved to {file_path}")
 
 def main():
-    data_lengths = [100000,500000]
-    run_times = 100
+    data_lengths = [1000, 100000, 1000000]
+    run_times = 5
 
     algorithms = setup_algorithms()
 
@@ -168,4 +157,5 @@ def main():
     save_to_csv(all_times, file_number)
 
 if __name__ == "__main__":
+    tracemalloc.start()  # 启动内存追踪
     main()

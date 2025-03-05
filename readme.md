@@ -2,7 +2,7 @@
 
 **crypto-ncRNA** 是一个基于非编码RNA（ncRNA）的生物启发式加密算法项目，结合生物序列特性和现代密码学技术，旨在研究ncRNA在信息加密与数据保护中的潜力。该项目模拟ncRNA的动态行为，开发出一套独特的加密系统，通过基因序列转录、动态密钥生成、冗余保护等机制，实现对文本、基因数据等多种数据类型的加密与解密。
 
-**Author: **
+## Author: 
 
 Xu Wang<sup>1, 4, a*</sup>, Yiquan Wang<sup>2, 4, b</sup>, Tin-Yeh Huang<sup>3, 4, c</sup>
 

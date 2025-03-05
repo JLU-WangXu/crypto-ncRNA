@@ -2,6 +2,32 @@
 
 **crypto-ncRNA** 是一个基于非编码RNA（ncRNA）的生物启发式加密算法项目，结合生物序列特性和现代密码学技术，旨在研究ncRNA在信息加密与数据保护中的潜力。该项目模拟ncRNA的动态行为，开发出一套独特的加密系统，通过基因序列转录、动态密钥生成、冗余保护等机制，实现对文本、基因数据等多种数据类型的加密与解密。
 
+**Author: **
+Xu Wang<sup>1, 4, a*</sup>, Yiquan Wang<sup>2, 4, b</sup>, Tin-Yeh Huang<sup>3, 4, c</sup>
+
+1. Tsinghua University-Peking University Joint Center for Life Sciences, Tsinghua University, Beijing, 100084, China
+
+2. College of Mathematics and System Science, Xinjiang University, Urumqi, Xinjiang, 830046, China
+
+3. Department of Industrial and System Engineering, Faculty of Engineering, The Hong Kong Polytechnic University, Hong Kong SAR, 999077, China
+
+4. Shenzhen X-Institute, Shenzhen, China, 518055
+
+a. [wangxu24@mails.tsinghua.edu.cn](mailto:wangxu24@mails.tsinghua.edu.cn)   b. [ethan@stu.xju.edu.cn](mailto:ethan@stu.xju.edu.cn)   c. [tin-yeh.huang@connect.polyu.hk](mailto:tin-yeh.huang@connect.polyu.hk)  
+
+## 引用
+如果您使用本项目或参考相关算法，请使用以下引用格式：
+```bibtex
+@inproceedings{
+wangxu2025cryptoncrna,
+title={Crypto-nc{RNA}: Non-coding {RNA} (nc{RNA}) Based Encryption Algorithm},
+author={WangXu and YiquanWang and Tin-Yeh HUANG},
+booktitle={ICLR 2025 Workshop on AI for Nucleic Acids},
+year={2025},
+url={https://openreview.net/forum?id=j6ODUDw4vN}
+}
+```
+
 ### 1.0 版本亮点：
 1. **基于ncRNA的加密算法**：利用碱基替换与RNA转录模拟加密。
 2. **动态密钥生成**：使用输入属性或时间动态生成加密密钥。
@@ -138,7 +164,7 @@
     # 和apply_dynamic_key相同，异或操作是对称的，解密时调用相同逻辑
     return apply_dynamic_key(data, key)
  ```
-  
+
 - **冗余保护**：在加密数据中加入冗余位以增强其完整性和抗攻击性。
   
  ```python
@@ -150,7 +176,7 @@
 - **加密与解密功能**：实现了完整的加密和解密过程，可以应用于文本、基因数据等多种数据类型。
   
  ## 加密 
- 
+
  ```python
   def encrypt(plaintext, seed=None):
     start_time = time.time()  # 开始计时
@@ -179,7 +205,7 @@
     
     return encrypted_with_redundancy, original_order, encryption_time
 
-```
+ ```
 
 
 ## 解密
